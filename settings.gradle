@@ -1,0 +1,3 @@
+include ':watchsdk'
+include ':app'
+rootProject.name = "Watch SDK - Java"
