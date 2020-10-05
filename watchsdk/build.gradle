@@ -1,4 +1,18 @@
 apply plugin: 'com.android.library'
+apply plugin: 'com.github.panpf.bintray-publish'
+
+publish {
+    def groupProjectID = 'com.madgaze.watch'
+    def artifactProjectID = 'development-kit-watch'
+    def publishVersionID = '0.0.1'
+
+    userOrg = 'madgazesdk'
+    groupId = groupProjectID
+    artifactId = artifactProjectID
+    publishVersion = publishVersionID
+    desc = 'SDK for MAD Gaze Watch App Development'
+    website = 'https://madgaze.com/sdk'
+}
 
 android {
     compileSdkVersion 29
