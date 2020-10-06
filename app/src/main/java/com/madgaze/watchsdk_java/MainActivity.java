@@ -4,6 +4,7 @@ import android.os.Bundle;
 
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.google.android.material.snackbar.Snackbar;
+import com.madgaze.watchsdk.MobileActivity;
 import com.madgaze.watchsdk.WatchActivity;
 import com.madgaze.watchsdk.WatchException;
 import com.madgaze.watchsdk.WatchGesture;
@@ -17,7 +18,7 @@ import android.view.View;
 import android.view.Menu;
 import android.view.MenuItem;
 
-public class MainActivity extends WatchActivity {
+public class MainActivity extends MobileActivity {
     private String TAG = MainActivity.class.getSimpleName();
 
     @Override
@@ -40,9 +41,11 @@ public class MainActivity extends WatchActivity {
     @Override
     protected void onStart() {
         super.onStart();
+        Log.d(TAG, "onStart before isWatchGestureDetecting: "+isWatchGestureDetecting());
         if (!isWatchGestureDetecting()) {
             startWatchGestureDetection();
         }
+        Log.d(TAG, "onStart after isWatchGestureDetecting: "+isWatchGestureDetecting());
     }
 
     @Override
