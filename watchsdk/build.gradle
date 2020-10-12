@@ -2,9 +2,9 @@ apply plugin: 'com.android.library'
 apply plugin: 'com.github.panpf.bintray-publish'
 
 publish {
-    def groupProjectID = 'com.madgaze.watch'
+    def groupProjectID = 'com.madgaze.smartwatch'
     def artifactProjectID = 'development-kit-watch'
-    def publishVersionID = '0.0.1'
+    def publishVersionID = '1.0.0'
 
     userOrg = 'madgazesdk'
     groupId = groupProjectID
