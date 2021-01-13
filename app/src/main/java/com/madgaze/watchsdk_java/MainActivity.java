@@ -19,7 +19,7 @@ import android.view.Menu;
 import android.view.MenuItem;
 
 public class MainActivity extends MobileActivity {
-    private String TAG = MainActivity.class.getSimpleName();
+    private final String TAG = MainActivity.class.getSimpleName();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -42,9 +42,9 @@ public class MainActivity extends MobileActivity {
     protected void onStart() {
         super.onStart();
         Log.d(TAG, "onStart before isWatchGestureDetecting: "+isWatchGestureDetecting());
-        if (!isWatchGestureDetecting()) {
-            startWatchGestureDetection();
-        }
+//        if (!isWatchGestureDetecting()) {
+//            startWatchGestureDetection();
+//        }
         Log.d(TAG, "onStart after isWatchGestureDetecting: "+isWatchGestureDetecting());
     }
 

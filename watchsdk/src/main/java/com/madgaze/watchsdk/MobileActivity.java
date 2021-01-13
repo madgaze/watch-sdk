@@ -7,12 +7,16 @@ import android.content.ServiceConnection;
 import android.os.Bundle;
 import android.os.IBinder;
 import android.os.RemoteException;
+import android.util.Log;
 
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 
 import com.madgaze.watch.connector.MGConnectorServiceInterface;
 import com.madgaze.watch.connector.MGConnectorServiceListener;
+
+import java.util.Arrays;
+import java.util.Map;
 
 public abstract class MobileActivity extends AppCompatActivity {
     String TAG = MobileActivity.class.getSimpleName();
@@ -41,6 +45,7 @@ public abstract class MobileActivity extends AppCompatActivity {
 
     public void startWatchGestureDetection() {
         try {
+            Log.d(TAG, "startWatchGestureDetection: "+mMGConnectorServiceInterface.isConnected());
             if (mMGConnectorServiceInterface != null && mMGConnectorServiceInterface.isConnected()) {
                 if (!isDetectionOn) {
                     isDetectionOn = true;
@@ -91,13 +96,18 @@ public abstract class MobileActivity extends AppCompatActivity {
         @Override
         public void onServiceConnected(ComponentName name, IBinder service) {
             mMGConnectorServiceInterface = MGConnectorServiceInterface.Stub.asInterface(service);
+            Log.d(TAG, "onServiceConnected: ");
             try {
                 if (mMGConnectorServiceInterface != null) {
                     mMGConnectorServiceInterface.registListener(new MyConnectorServiceListener(activityContext));
                     boolean isConnected = mMGConnectorServiceInterface.isConnected();
+                    Log.d(TAG, "onServiceConnected: isConnected: "+isConnected);
                     if (!isConnected) {
                         onWatchGestureError(new WatchException(NOT_CONNECTED_TO_WATCH));
                     }
+                    Map<String, int[]> signalMap = mMGConnectorServiceInterface.registerGestures(new int[] { 1, 2, 3 });
+                    Log.d(TAG, "onServiceConnected: signalMap: "+ Arrays.toString(signalMap.get("needTrain")));
+                    startWatchGestureDetection();
                 }
             } catch (RemoteException e) {
                 e.printStackTrace();
