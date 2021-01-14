@@ -56,7 +56,11 @@ public class MainActivity extends MobileActivity {
         int id = item.getItemId();
 
         //noinspection SimplifiableIfStatement
-        if (id == R.id.action_settings) {
+        if (id == R.id.action_connect) {
+            goToConnectPage();
+            return true;
+        } else if (id == R.id.action_train) {
+            goToTrainingPage(new byte[] { 1, 9 });
             return true;
         }
 
@@ -84,7 +88,7 @@ public class MainActivity extends MobileActivity {
     }
 
     @Override
-    public void onWatchServiceConnected() {
+    public void onMGWatchServiceConnected() {
         if (isWatchConnected()) {
             Map<String, int[]> signalMap = registerGestures(new int[]{1, 2, 3});
             if (signalMap.get("needTrain").length == 0) {
@@ -100,7 +104,7 @@ public class MainActivity extends MobileActivity {
     }
 
     @Override
-    public void onWatchServiceDisconnected() {
+    public void onMGWatchServiceDisconnected() {
         Log.d(TAG, "onWatchServiceDisconnected: ");
     }
 
