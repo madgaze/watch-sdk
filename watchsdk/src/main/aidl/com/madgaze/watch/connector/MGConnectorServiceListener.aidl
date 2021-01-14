@@ -6,4 +6,6 @@ package com.madgaze.watch.connector;
 interface MGConnectorServiceListener {
     void actionPerformed(int key, int times);
     void onServiceFailure(int errorCode);
+    void onWatchConnected();
+    void onWatchDisconnected();
 }

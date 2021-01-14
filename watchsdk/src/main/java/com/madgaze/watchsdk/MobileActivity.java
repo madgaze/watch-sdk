@@ -25,13 +25,39 @@ public abstract class MobileActivity extends AppCompatActivity {
     static String NOT_CONNECTED_TO_WATCH = "Not connected to watch";
     static String CONTROLLER_ERROR = "MG Watch app error";
     MGConnectorServiceInterface mMGConnectorServiceInterface;
-    boolean isDetectionOn = false;
+    private boolean isDetectionOn = false;
     Context activityContext = this;
 
     public abstract void onWatchGestureReceived(WatchGesture gesture, int times);
     public abstract void onWatchGestureError(WatchException error);
     public abstract void onWatchDetectionOn();
     public abstract void onWatchDetectionOff();
+    public abstract void onWatchServiceConnected();
+    public abstract void onWatchServiceDisconnected();
+    public abstract void onWatchConnected();
+    public abstract void onWatchDisconnected();
+
+    public Map<String, int[]> registerGestures(int[] gestures) {
+        Map<String, int[]> signalMap = null;
+        try {
+            signalMap = mMGConnectorServiceInterface.registerGestures(gestures);
+            Log.d(TAG, "onServiceConnected: signalMap: "+ Arrays.toString(signalMap.get("needTrain")));
+
+        } catch (RemoteException e) {
+            e.printStackTrace();
+        }
+        return signalMap;
+    }
+
+    public boolean isWatchConnected() {
+        try {
+            return mMGConnectorServiceInterface.isConnected();
+        } catch (RemoteException e) {
+            e.printStackTrace();
+        }
+        return false;
+    }
+
     public boolean isWatchGestureDetecting() {
         try {
             if (mMGConnectorServiceInterface == null || !mMGConnectorServiceInterface.isConnected()) {
@@ -100,14 +126,12 @@ public abstract class MobileActivity extends AppCompatActivity {
             try {
                 if (mMGConnectorServiceInterface != null) {
                     mMGConnectorServiceInterface.registListener(new MyConnectorServiceListener(activityContext));
-                    boolean isConnected = mMGConnectorServiceInterface.isConnected();
-                    Log.d(TAG, "onServiceConnected: isConnected: "+isConnected);
-                    if (!isConnected) {
-                        onWatchGestureError(new WatchException(NOT_CONNECTED_TO_WATCH));
-                    }
-                    Map<String, int[]> signalMap = mMGConnectorServiceInterface.registerGestures(new int[] { 1, 2, 3 });
-                    Log.d(TAG, "onServiceConnected: signalMap: "+ Arrays.toString(signalMap.get("needTrain")));
-                    startWatchGestureDetection();
+//                    boolean isConnected = mMGConnectorServiceInterface.isConnected();
+//                    Log.d(TAG, "onServiceConnected: isConnected: "+isConnected);
+//                    if (!isConnected) {
+//                        onWatchGestureError(new WatchException(NOT_CONNECTED_TO_WATCH));
+//                    }
+                    onWatchServiceConnected();
                 }
             } catch (RemoteException e) {
                 e.printStackTrace();
@@ -119,6 +143,7 @@ public abstract class MobileActivity extends AppCompatActivity {
             if (mMGConnectorServiceInterface != null) {
                 try {
                     mMGConnectorServiceInterface.unregistListener(new MyConnectorServiceListener(activityContext));
+                    onWatchServiceDisconnected();
                 } catch (RemoteException e) {
                     e.printStackTrace();
                 }
@@ -147,6 +172,16 @@ public abstract class MobileActivity extends AppCompatActivity {
         @Override
         public void onServiceFailure(int errorCode) {
             ((MobileActivity)mContext).onWatchGestureError(new WatchException(CONTROLLER_ERROR));
+        }
+
+        @Override
+        public void onWatchConnected() {
+            ((MobileActivity)mContext).onWatchConnected();
+        }
+
+        @Override
+        public void onWatchDisconnected() {
+            ((MobileActivity)mContext).onWatchDisconnected();
         }
 
         WatchGesture findNameBySignal(int signal) {

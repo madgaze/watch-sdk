@@ -18,6 +18,9 @@ import android.view.View;
 import android.view.Menu;
 import android.view.MenuItem;
 
+import java.util.Arrays;
+import java.util.Map;
+
 public class MainActivity extends MobileActivity {
     private final String TAG = MainActivity.class.getSimpleName();
 
@@ -36,16 +39,6 @@ public class MainActivity extends MobileActivity {
                         .setAction("Action", null).show();
             }
         });
-    }
-
-    @Override
-    protected void onStart() {
-        super.onStart();
-        Log.d(TAG, "onStart before isWatchGestureDetecting: "+isWatchGestureDetecting());
-//        if (!isWatchGestureDetecting()) {
-//            startWatchGestureDetection();
-//        }
-        Log.d(TAG, "onStart after isWatchGestureDetecting: "+isWatchGestureDetecting());
     }
 
     @Override
@@ -88,5 +81,36 @@ public class MainActivity extends MobileActivity {
     @Override
     public void onWatchDetectionOff() {
         Log.d(TAG, "onWatchDetectionOff: ");
+    }
+
+    @Override
+    public void onWatchServiceConnected() {
+        if (isWatchConnected()) {
+            Map<String, int[]> signalMap = registerGestures(new int[]{1, 2, 3});
+            if (signalMap.get("needTrain").length == 0) {
+                startWatchGestureDetection();
+            } else {
+                // TODO: go to MG Watch app train page
+                Log.d(TAG, "onWatchServiceConnected: some gestures need to train");
+            }
+        } else {
+            // TODO: go to MG Watch app connect page
+            Log.d(TAG, "onWatchServiceConnected: watch is not connected");
+        }
+    }
+
+    @Override
+    public void onWatchServiceDisconnected() {
+        Log.d(TAG, "onWatchServiceDisconnected: ");
+    }
+
+    @Override
+    public void onWatchConnected() {
+        Log.d(TAG, "onWatchConnected: ");
+    }
+
+    @Override
+    public void onWatchDisconnected() {
+        Log.d(TAG, "onWatchDisconnected: ");
     }
 }
