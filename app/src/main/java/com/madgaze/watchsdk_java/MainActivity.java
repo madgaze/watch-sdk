@@ -5,11 +5,9 @@ import android.os.Bundle;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.google.android.material.snackbar.Snackbar;
 import com.madgaze.watchsdk.MobileActivity;
-import com.madgaze.watchsdk.WatchActivity;
 import com.madgaze.watchsdk.WatchException;
 import com.madgaze.watchsdk.WatchGesture;
 
-import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
 
 import android.util.Log;
@@ -18,11 +16,16 @@ import android.view.View;
 import android.view.Menu;
 import android.view.MenuItem;
 
-import java.util.Arrays;
-import java.util.Map;
-
 public class MainActivity extends MobileActivity {
     private final String TAG = MainActivity.class.getSimpleName();
+
+    public final WatchGesture[] REQUIRED_WATCH_GESTURES = {
+            WatchGesture.FINGER_SNAP,
+            WatchGesture.FINGER_INDEX_MIDDLE,
+            WatchGesture.ARM_LEFT,
+            WatchGesture.ARM_RIGHT,
+            WatchGesture.HANDBACK_UP
+    };
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -56,20 +59,20 @@ public class MainActivity extends MobileActivity {
         int id = item.getItemId();
 
         //noinspection SimplifiableIfStatement
-        if (id == R.id.action_connect) {
-            goToConnectPage();
-            return true;
-        } else if (id == R.id.action_train) {
-            goToTrainingPage(new byte[] { 1, 9 });
-            return true;
-        }
+//        if (id == R.id.action_connect) {
+//            goToConnectPage();
+//            return true;
+//        } else if (id == R.id.action_train) {
+//            goToTrainingPage(new byte[] { 11 });
+//            return true;
+//        }
 
         return super.onOptionsItemSelected(item);
     }
 
     @Override
-    public void onWatchGestureReceived(WatchGesture gesture, int times) {
-        Log.d(TAG, "onWatchGestureReceived: "+gesture.name()+" x"+times);
+    public void onWatchGestureReceived(WatchGesture gesture) {
+        Log.d(TAG, "onWatchGestureReceived: "+gesture.name());
     }
 
     @Override
@@ -88,24 +91,23 @@ public class MainActivity extends MobileActivity {
     }
 
     @Override
-    public void onMGWatchServiceConnected() {
-        if (isWatchConnected()) {
-            Map<String, int[]> signalMap = registerGestures(new int[]{1, 2, 3});
-            if (signalMap.get("needTrain").length == 0) {
-                startWatchGestureDetection();
-            } else {
-                // TODO: go to MG Watch app train page
-                Log.d(TAG, "onWatchServiceConnected: some gestures need to train");
-            }
-        } else {
-            // TODO: go to MG Watch app connect page
-            Log.d(TAG, "onWatchServiceConnected: watch is not connected");
-        }
+    public void onMGWatchServiceReady() {
+        tryStartDetection();
     }
 
     @Override
-    public void onMGWatchServiceDisconnected() {
-        Log.d(TAG, "onWatchServiceDisconnected: ");
+    public void onPause(){
+        super.onPause();
+
+        if (MGWatch.isWatchGestureDetecting(this))
+            MGWatch.stopGestureDetection(this);
+    }
+
+    @Override
+    public void onResume(){
+        super.onResume();
+        if (MGWatch.isMGWatchServiceReady(this))
+            tryStartDetection();
     }
 
     @Override
@@ -117,4 +119,28 @@ public class MainActivity extends MobileActivity {
     public void onWatchDisconnected() {
         Log.d(TAG, "onWatchDisconnected: ");
     }
+
+    @Override
+    protected WatchGesture[] getRequiredWatchGestures(){
+        return REQUIRED_WATCH_GESTURES;
+    }
+
+    private void tryStartDetection(){
+        Log.i(TAG, "tryStartDetection:  ");
+
+        if (!MGWatch.isWatchConnected(this)) {
+            MGWatch.connect(this);
+            return;
+        }
+
+        if (!MGWatch.isGesturesTrained(this)) {
+            MGWatch.trainRequiredGestures(this);
+            return;
+        }
+
+        if (!MGWatch.isWatchGestureDetecting(this)) {
+            MGWatch.startGestureDetection(this);
+        }
+    }
+
 }

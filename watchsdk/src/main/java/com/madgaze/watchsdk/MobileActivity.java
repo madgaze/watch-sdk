@@ -24,29 +24,68 @@ public abstract class MobileActivity extends AppCompatActivity {
     static String CONTROLLER_APP_NOT_UPDATED = "MG Watch app not updated";
     static String NOT_CONNECTED_TO_WATCH = "Not connected to watch";
     static String CONTROLLER_ERROR = "MG Watch app error";
+    static String MGWATCH_SERVICE_DISCONNECTED = "MG Watch service disconnected";
     MGConnectorServiceInterface mMGConnectorServiceInterface;
     private boolean isDetectionOn = false;
+    private boolean isServiceReady = false;
+    private byte[] needTrainSignals;
     Context activityContext = this;
 
-    public abstract void onWatchGestureReceived(WatchGesture gesture, int times);
+    public abstract void onWatchGestureReceived(WatchGesture gesture);
     public abstract void onWatchGestureError(WatchException error);
     public abstract void onWatchDetectionOn();
     public abstract void onWatchDetectionOff();
-    public abstract void onMGWatchServiceConnected();
-    public abstract void onMGWatchServiceDisconnected();
+    public abstract void onMGWatchServiceReady();
     public abstract void onWatchConnected();
     public abstract void onWatchDisconnected();
+    protected abstract WatchGesture[] getRequiredWatchGestures();
 
-    public Map<String, int[]> registerGestures(int[] gestures) {
-        Map<String, int[]> signalMap = null;
+    public static class MGWatch {
+        public static boolean isMGWatchServiceReady(MobileActivity ctx){
+            return ctx.isServiceReady;
+        }
+        public static boolean isWatchGestureDetecting(MobileActivity ctx){
+            return ctx.isWatchGestureDetecting();
+        }
+        public static void stopGestureDetection(MobileActivity ctx){
+            ctx.stopGestureDetection();
+        }
+        public static void startGestureDetection(MobileActivity ctx){
+            ctx.startGestureDetection();
+        }
+        public static void connect(MobileActivity ctx){
+            ctx.goToConnectPage();
+        }
+        public static boolean isWatchConnected(MobileActivity ctx){
+            return ctx.isWatchConnected();
+        }
+        public static boolean isGesturesTrained(MobileActivity ctx){
+            return ctx.isGesturesTrained();
+        }
+        public static void trainRequiredGestures(MobileActivity ctx) {
+            ctx.goToTrainingPage();
+        }
+    }
+
+    @Override
+    public void onPause(){
+        super.onPause();
+        if (isWatchGestureDetecting())
+            stopGestureDetection();
+    }
+
+    public boolean isGesturesTrained() {
         try {
-            signalMap = mMGConnectorServiceInterface.registerGestures(gestures);
-            Log.d(TAG, "onServiceConnected: signalMap: "+ Arrays.toString(signalMap.get("needTrain")));
-
+            WatchGesture[] objectArray = getRequiredWatchGestures();
+            int[] gesturesIds = new int[objectArray.length];
+            for (int i = 0; i < objectArray.length; i++)
+                gesturesIds[i] = objectArray[i].getGestureId();
+            needTrainSignals = mMGConnectorServiceInterface.registerGestures(gesturesIds);
+            return needTrainSignals.length == 0;
         } catch (RemoteException e) {
             e.printStackTrace();
         }
-        return signalMap;
+        return false;
     }
 
     public void goToConnectPage() {
@@ -57,9 +96,9 @@ public abstract class MobileActivity extends AppCompatActivity {
         }
     }
 
-    public void goToTrainingPage(byte[] signals) {
+    public void goToTrainingPage() {
         try {
-            mMGConnectorServiceInterface.goToTrainingPage(signals);
+            mMGConnectorServiceInterface.goToTrainingPage(needTrainSignals);
         } catch (RemoteException e) {
             e.printStackTrace();
         }
@@ -74,7 +113,7 @@ public abstract class MobileActivity extends AppCompatActivity {
         return false;
     }
 
-    public boolean isWatchGestureDetecting() {
+    private boolean isWatchGestureDetecting() {
         try {
             if (mMGConnectorServiceInterface == null || !mMGConnectorServiceInterface.isConnected()) {
                 isDetectionOn = false;
@@ -85,7 +124,7 @@ public abstract class MobileActivity extends AppCompatActivity {
         return isDetectionOn;
     }
 
-    public void startWatchGestureDetection() {
+    private void startGestureDetection() {
         try {
             Log.d(TAG, "startWatchGestureDetection: "+mMGConnectorServiceInterface.isConnected());
             if (mMGConnectorServiceInterface != null && mMGConnectorServiceInterface.isConnected()) {
@@ -102,7 +141,7 @@ public abstract class MobileActivity extends AppCompatActivity {
         }
     }
 
-    public void stopWatchGestureDetection() {
+    private void stopGestureDetection() {
         if (isDetectionOn) {
             isDetectionOn = false;
             onWatchDetectionOff();
@@ -123,7 +162,6 @@ public abstract class MobileActivity extends AppCompatActivity {
     @Override
     protected void onDestroy() {
         super.onDestroy();
-        stopWatchGestureDetection();
         if (mMGConnectorServiceInterface != null) {
             try {
                 mMGConnectorServiceInterface.unregistListener(new MyConnectorServiceListener(activityContext));
@@ -149,7 +187,8 @@ public abstract class MobileActivity extends AppCompatActivity {
 //                    if (!isConnected) {
 //                        onWatchGestureError(new WatchException(NOT_CONNECTED_TO_WATCH));
 //                    }
-                    onMGWatchServiceConnected();
+                    isServiceReady = true;
+                    onMGWatchServiceReady();
                 }
             } catch (RemoteException e) {
                 e.printStackTrace();
@@ -160,7 +199,8 @@ public abstract class MobileActivity extends AppCompatActivity {
         public void onServiceDisconnected(ComponentName name) {
             if (mMGConnectorServiceInterface != null) {
                 try {
-                    onMGWatchServiceDisconnected();
+                    isServiceReady = false;
+                    onWatchGestureError(new WatchException(MGWATCH_SERVICE_DISCONNECTED));
                     mMGConnectorServiceInterface.unregistListener(mMyConnectorServiceListener);
                 } catch (RemoteException e) {
                     e.printStackTrace();
@@ -178,11 +218,11 @@ public abstract class MobileActivity extends AppCompatActivity {
         }
 
         @Override
-        public void actionPerformed(int key, int times) {
-            if (key != 1 || times != -1) {
-                WatchGesture gesture = findNameBySignal(key);
+        public void actionPerformed(int gestureId) {
+            if (gestureId != -1) {
+                WatchGesture gesture = findNameByGestureId(gestureId);
                 if (gesture != null) {
-                    ((MobileActivity)mContext).onWatchGestureReceived(gesture, times);
+                    ((MobileActivity)mContext).onWatchGestureReceived(gesture);
                 }
             }
         }
@@ -202,9 +242,9 @@ public abstract class MobileActivity extends AppCompatActivity {
             ((MobileActivity)mContext).onWatchDisconnected();
         }
 
-        WatchGesture findNameBySignal(int signal) {
+        WatchGesture findNameByGestureId(int gestureId) {
             for (WatchGesture g: WatchGesture.values()) {
-                if (g.getSignal() == signal) {
+                if (g.getGestureId() == gestureId) {
                     return g;
                 }
             }

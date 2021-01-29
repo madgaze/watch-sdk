@@ -104,7 +104,7 @@ public abstract class WatchActivity extends AppCompatActivity {
         @Override
         public void actionPerformed(int key, int times) {
             if (key != 1 || times != -1) {
-                WatchGesture gesture = findNameBySignal(key);
+                WatchGesture gesture = findNameByGestureId(key);
                 if (gesture != null) {
                     ((WatchActivity)mContext).onWatchGestureReceived(gesture, times);
                 }
@@ -116,9 +116,9 @@ public abstract class WatchActivity extends AppCompatActivity {
             ((WatchActivity)mContext).onWatchGestureError(new WatchException(CONTROLLER_ERROR));
         }
 
-        WatchGesture findNameBySignal(int signal) {
+        WatchGesture findNameByGestureId(int gestureId) {
             for (WatchGesture g: WatchGesture.values()) {
-                if (g.getSignal() == signal) {
+                if (g.getGestureId() == gestureId) {
                     return g;
                 }
             }

@@ -7,7 +7,7 @@ import com.madgaze.watch.connector.MGConnectorServiceListener;
 
 interface MGConnectorServiceInterface {
     boolean isConnected();
-    Map registerGestures(in int[] gestures);
+    byte[] registerGestures(in int[] gestureIds);
     void goToConnectPage();
     void goToTrainingPage(in byte[] signals);
     void registListener(MGConnectorServiceListener listener);
