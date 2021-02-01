@@ -220,7 +220,15 @@ public abstract class MobileActivity extends AppCompatActivity {
 
         @Override
         public void actionPerformed(int gestureId) {
-            if (gestureId != -1) {
+            WatchGesture wg = null;
+            for(WatchGesture e : WatchGesture.values()){
+                if(gestureId == e.getGestureId()) {
+                    wg = e;
+                    break;
+                }
+            }
+
+            if (gestureId != -1 && Arrays.asList(getRequiredWatchGestures()).contains(wg)) {
                 WatchGesture gesture = findNameByGestureId(gestureId);
                 if (gesture != null) {
                     ((MobileActivity)mContext).onWatchGestureReceived(gesture);

@@ -23,9 +23,11 @@ public class MainActivity extends MobileActivity {
             WatchGesture.FINGER_SNAP,
             WatchGesture.FINGER_INDEX_MIDDLE,
             WatchGesture.ARM_LEFT,
+            WatchGesture.ARM_LEFT_2,
             WatchGesture.ARM_RIGHT,
             WatchGesture.HANDBACK_UP,
-            WatchGesture.FINGER_INDEX
+            WatchGesture.FINGER_INDEX,
+            WatchGesture.FINGER_MIDDLE
     };
 
     @Override
