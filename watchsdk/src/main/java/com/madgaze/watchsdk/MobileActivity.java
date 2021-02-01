@@ -228,7 +228,7 @@ public abstract class MobileActivity extends AppCompatActivity {
                 }
             }
 
-            if (gestureId != -1 && Arrays.asList(getRequiredWatchGestures()).contains(wg)) {
+            if (isDetectionOn && gestureId != -1 && Arrays.asList(getRequiredWatchGestures()).contains(wg)) {
                 WatchGesture gesture = findNameByGestureId(gestureId);
                 if (gesture != null) {
                     ((MobileActivity)mContext).onWatchGestureReceived(gesture);
