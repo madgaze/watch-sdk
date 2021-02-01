@@ -81,6 +81,7 @@ public abstract class MobileActivity extends AppCompatActivity {
             for (int i = 0; i < objectArray.length; i++)
                 gesturesIds[i] = objectArray[i].getGestureId();
             needTrainSignals = mMGConnectorServiceInterface.registerGestures(gesturesIds);
+            Log.d(TAG, "isGesturesTrained: "+Arrays.toString(needTrainSignals));
             return needTrainSignals.length == 0;
         } catch (RemoteException e) {
             e.printStackTrace();

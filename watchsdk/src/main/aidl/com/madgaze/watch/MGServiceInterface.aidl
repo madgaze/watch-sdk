@@ -8,6 +8,7 @@ import com.madgaze.watch.MGServiceListener;
 interface MGServiceInterface {
     int isTaskRunning();
     boolean isTrained();
+    byte[] registerGestures(in int[] gestureIds);
     void registListener(MGServiceListener listener);
     void unregistListener(MGServiceListener listener);
 }
