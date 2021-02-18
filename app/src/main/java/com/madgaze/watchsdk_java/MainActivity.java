@@ -27,6 +27,7 @@ public class MainActivity extends MobileActivity {
             WatchGesture.ARM_RIGHT,
             WatchGesture.HANDBACK_UP,
             WatchGesture.FINGER_INDEX,
+            WatchGesture.MOVE_ARM_DOWN,
             WatchGesture.FINGER_MIDDLE
     };
 

@@ -50,8 +50,8 @@ public class MainWatchActivity extends WatchActivity {
     @Override
     protected void onStart() {
         super.onStart();
-        if (!isWatchGestureDetecting()) {
-            startWatchGestureDetection();
+        if (!MGWatch.isWatchGestureDetecting(this)) {
+            MGWatch.startWatchGestureDetection(this);
         }
     }
 
