@@ -30,6 +30,7 @@ public abstract class MobileActivity extends AppCompatActivity {
     public boolean isServiceReady = false;
     private byte[] needTrainSignals;
     Context activityContext = this;
+    MyConnectorServiceListener mMyConnectorServiceListener;
 
     public abstract void onWatchGestureReceived(WatchGesture gesture);
     public abstract void onWatchGestureError(WatchException error);
@@ -41,10 +42,30 @@ public abstract class MobileActivity extends AppCompatActivity {
     protected abstract WatchGesture[] getRequiredWatchGestures();
 
     @Override
+    public void onResume(){
+        super.onResume();
+        if (mMGConnectorServiceInterface != null) {
+            try {
+                mMGConnectorServiceInterface.registListener(mMyConnectorServiceListener);
+            } catch (RemoteException e) {
+                e.printStackTrace();
+            }
+        }
+    }
+
+    @Override
     public void onPause(){
         super.onPause();
         if (isWatchGestureDetecting())
             stopGestureDetection();
+
+        if (mMGConnectorServiceInterface != null) {
+            try {
+                mMGConnectorServiceInterface.unregistListener(mMyConnectorServiceListener);
+            } catch (RemoteException e) {
+                e.printStackTrace();
+            }
+        }
     }
 
     public boolean isGesturesTrained() {
@@ -136,18 +157,10 @@ public abstract class MobileActivity extends AppCompatActivity {
     @Override
     protected void onDestroy() {
         super.onDestroy();
-        if (mMGConnectorServiceInterface != null) {
-            try {
-                mMGConnectorServiceInterface.unregistListener(new MyConnectorServiceListener(activityContext));
-            } catch (RemoteException e) {
-                e.printStackTrace();
-            }
-            unbindService(mConnection);
-        }
+        unbindService(mConnection);
     }
 
     ServiceConnection mConnection = new ServiceConnection() {
-        MyConnectorServiceListener mMyConnectorServiceListener;
         @Override
         public void onServiceConnected(ComponentName name, IBinder service) {
             mMGConnectorServiceInterface = MGConnectorServiceInterface.Stub.asInterface(service);
