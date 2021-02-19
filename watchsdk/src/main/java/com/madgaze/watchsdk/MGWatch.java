@@ -1,4 +1,4 @@
-package com.madgaze.watchsdk_java;
+package com.madgaze.watchsdk;
 
 import com.madgaze.watchsdk.MobileActivity;
 import com.madgaze.watchsdk.WatchActivity;

@@ -4,11 +4,11 @@ import android.os.Bundle;
 
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.google.android.material.snackbar.Snackbar;
+import com.madgaze.watchsdk.MGWatch;
 import com.madgaze.watchsdk.WatchActivity;
 import com.madgaze.watchsdk.WatchException;
 import com.madgaze.watchsdk.WatchGesture;
 
-import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
 
 import android.util.Log;
