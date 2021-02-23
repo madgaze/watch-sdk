@@ -16,35 +16,38 @@ import android.view.View;
 
 import android.view.Menu;
 import android.view.MenuItem;
+import android.widget.TextView;
 
 public class MainWatchActivity extends WatchActivity {
     private final String TAG = MainWatchActivity.class.getSimpleName();
 
     public final WatchGesture[] REQUIRED_WATCH_GESTURES = {
             WatchGesture.FINGER_SNAP,
-            WatchGesture.FINGER_INDEX_MIDDLE,
-            WatchGesture.ARM_LEFT,
-            WatchGesture.ARM_LEFT_2,
-            WatchGesture.ARM_RIGHT,
+            WatchGesture.THUMBTAP_INDEX_MIDDLE,
+            WatchGesture.FOREARM_LEFT,
+            WatchGesture.FOREARM_LEFT_2,
+            WatchGesture.FOREARM_RIGHT,
             WatchGesture.HANDBACK_UP,
-            WatchGesture.FINGER_MIDDLE
+            WatchGesture.THUMBTAP_INDEX,
+            WatchGesture.MOVE_FOREARM_DOWN,
+            WatchGesture.THUMBTAP_MIDDLE
     };
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-        Toolbar toolbar = findViewById(R.id.toolbar);
-        setSupportActionBar(toolbar);
+//        Toolbar toolbar = findViewById(R.id.toolbar);
+//        setSupportActionBar(toolbar);
 
-        FloatingActionButton fab = findViewById(R.id.fab);
-        fab.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                Snackbar.make(view, "Replace with your own action", Snackbar.LENGTH_LONG)
-                        .setAction("Action", null).show();
-            }
-        });
+//        FloatingActionButton fab = findViewById(R.id.fab);
+//        fab.setOnClickListener(new View.OnClickListener() {
+//            @Override
+//            public void onClick(View view) {
+//                Snackbar.make(view, "Replace with your own action", Snackbar.LENGTH_LONG)
+//                        .setAction("Action", null).show();
+//            }
+//        });
     }
 
     @Override
@@ -101,4 +104,5 @@ public class MainWatchActivity extends WatchActivity {
     protected WatchGesture[] getRequiredWatchGestures() {
         return REQUIRED_WATCH_GESTURES;
     }
+
 }
