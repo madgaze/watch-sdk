@@ -16,13 +16,13 @@ import com.madgaze.watch.connector.MGConnectorServiceInterface;
 import com.madgaze.watch.connector.MGConnectorServiceListener;
 
 import java.util.Arrays;
-import java.util.Map;
 
 public abstract class MobileActivity extends AppCompatActivity {
     String TAG = MobileActivity.class.getSimpleName();
     String remotePackageName = "com.madgaze.watch.connector";
     static String CONTROLLER_APP_NOT_UPDATED = "MG Watch app not updated";
     static String NOT_CONNECTED_TO_WATCH = "Not connected to watch";
+    static String GESTURE_NOT_TRAINED = "Some gestures have not trained yet";
     static String CONTROLLER_ERROR = "MG Watch app error";
     static String MGWATCH_SERVICE_DISCONNECTED = "MG Watch service disconnected";
     MGConnectorServiceInterface mMGConnectorServiceInterface;
@@ -56,9 +56,6 @@ public abstract class MobileActivity extends AppCompatActivity {
     @Override
     public void onPause(){
         super.onPause();
-        if (isWatchGestureDetecting())
-            stopGestureDetection();
-
         if (mMGConnectorServiceInterface != null) {
             try {
                 mMGConnectorServiceInterface.unregistListener(mMyConnectorServiceListener);
@@ -123,13 +120,16 @@ public abstract class MobileActivity extends AppCompatActivity {
         try {
             Log.d(TAG, "startWatchGestureDetection: "+mMGConnectorServiceInterface.isConnected());
             if (mMGConnectorServiceInterface != null && mMGConnectorServiceInterface.isConnected()) {
-                if (!isDetectionOn) {
+                if (isGesturesTrained()) {
                     isDetectionOn = true;
                     onWatchDetectionOn();
+                } else {
+                    isDetectionOn = false;
+                    onWatchGestureError(new WatchException(GESTURE_NOT_TRAINED));
                 }
             } else {
                 isDetectionOn = false;
-                onWatchDetectionOff();
+                onWatchGestureError(new WatchException(NOT_CONNECTED_TO_WATCH));
             }
         } catch (RemoteException e) {
             e.printStackTrace();
@@ -137,10 +137,8 @@ public abstract class MobileActivity extends AppCompatActivity {
     }
 
     public void stopGestureDetection() {
-        if (isDetectionOn) {
-            isDetectionOn = false;
-            onWatchDetectionOff();
-        }
+        isDetectionOn = false;
+        onWatchDetectionOff();
     }
 
     @Override
