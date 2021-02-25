@@ -37,7 +37,8 @@ public class MainActivity extends MobileActivity {
             WatchGesture.HANDBACK_UP,
             WatchGesture.THUMBTAP_INDEX,
             WatchGesture.MOVE_FOREARM_DOWN,
-            WatchGesture.THUMBTAP_MIDDLE
+            WatchGesture.THUMBTAP_MIDDLE,
+            WatchGesture.JOINTTAP_MIDDLE_MIDDLE
     };
 
     @Override
@@ -70,6 +71,7 @@ public class MainActivity extends MobileActivity {
     @Override
     public void onWatchDetectionOff() {
         Log.d(TAG, "onWatchDetectionOff: ");
+        setStatusText("Idle");
     }
 
     @Override
