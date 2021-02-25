@@ -4,10 +4,12 @@ import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
 import android.content.ServiceConnection;
+import android.os.Bundle;
 import android.os.IBinder;
 import android.os.RemoteException;
 import android.util.Log;
 
+import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 
 import com.madgaze.watch.MGServiceInterface;
@@ -19,52 +21,79 @@ public abstract class WatchActivity extends AppCompatActivity {
     String TAG = WatchActivity.class.getSimpleName();
     String remotePackageName = "com.madgaze.watch";
     static String CONTROLLER_APP_NOT_UPDATED = "CONTROLLER_APP_NOT_UPDATED";
-    static String INCOMPLETE_CALIBRATION = "INCOMPLETE_CALIBRATION";
     static String CONTROLLER_ERROR = "CONTROLLER_ERROR";
     static String UNABLE_TO_START_INCOMPLETED_TRAINING = "UNABLE_TO_START_INCOMPLETED_TRAINING";
+    static String SERVICE_DISCONNECTED = "SERVICE_DISCONNECTED";
     MGServiceInterface mMGServiceInterface;
     boolean isDetectionOn = false;
+    public boolean isServiceReady = false;
     Context activityContext = this;
+    MyServiceListener mMyServiceListener;
 
     public abstract void onWatchGestureReceived(WatchGesture gesture);
     public abstract void onWatchGestureError(WatchException error);
     public abstract void onWatchDetectionOn();
     public abstract void onWatchDetectionOff();
+    public abstract void onServiceReady();
     public boolean isWatchGestureDetecting() {
         return isDetectionOn;
     }
     protected abstract WatchGesture[] getRequiredWatchGestures();
 
     public void startWatchGestureDetection() {
-        if (!isDetectionOn) {
-            Intent intent = new Intent();
-            intent.setComponent(new ComponentName(remotePackageName+".test", remotePackageName+".service.SignalDetectService"));
-            boolean result = bindService(intent, mConnection, Context.BIND_AUTO_CREATE);
-            if (!result) {
-                onWatchGestureError(new WatchException(CONTROLLER_APP_NOT_UPDATED));
-            }
+        if (mMGServiceInterface != null && isGesturesTrained()) {
+            isDetectionOn = true;
+            onWatchDetectionOn();
+        } else {
+            isDetectionOn = false;
+            onWatchGestureError(new WatchException(UNABLE_TO_START_INCOMPLETED_TRAINING));
         }
     }
 
     public void stopWatchGestureDetection() {
-        if (isDetectionOn) {
-            if (mMGServiceInterface != null) {
-                try {
-                    mMGServiceInterface.unregistListener(new MyServiceListener(activityContext));
-                } catch (RemoteException e) {
-                    e.printStackTrace();
-                }
-                unbindService(mConnection);
-                isDetectionOn = false;
-                onWatchDetectionOff();
+        isDetectionOn = false;
+        onWatchDetectionOff();
+    }
+
+    @Override
+    protected void onCreate(@Nullable Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        Intent intent = new Intent();
+        intent.setComponent(new ComponentName(remotePackageName /* + ".test" */, remotePackageName + ".service.SignalDetectService"));
+        boolean result = bindService(intent, mConnection, Context.BIND_AUTO_CREATE);
+        if (!result) {
+            onWatchGestureError(new WatchException(CONTROLLER_APP_NOT_UPDATED));
+        }
+    }
+
+    @Override
+    public void onResume(){
+        super.onResume();
+        if (mMGServiceInterface != null) {
+            try {
+                mMGServiceInterface.registListener(mMyServiceListener);
+            } catch (RemoteException e) {
+                e.printStackTrace();
             }
         }
     }
 
     @Override
-    protected void onStop() {
-        super.onStop();
-        stopWatchGestureDetection();
+    public void onPause(){
+        super.onPause();
+        if (mMGServiceInterface != null) {
+            try {
+                mMGServiceInterface.unregistListener(mMyServiceListener);
+            } catch (RemoteException e) {
+                e.printStackTrace();
+            }
+        }
+    }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        unbindService(mConnection);
     }
 
     public boolean isGesturesTrained() {
@@ -88,17 +117,10 @@ public abstract class WatchActivity extends AppCompatActivity {
             mMGServiceInterface = MGServiceInterface.Stub.asInterface(service);
             try {
                 if (mMGServiceInterface != null) {
-                    boolean isTrained = mMGServiceInterface.isTrained();
-                    if (!isTrained) {
-                        onWatchGestureError(new WatchException(INCOMPLETE_CALIBRATION));
-                    }
-                    if (!isGesturesTrained()) {
-                        Log.d(TAG, "!isGesturesTrained");
-                        onWatchGestureError(new WatchException(UNABLE_TO_START_INCOMPLETED_TRAINING));
-                    }
-                    mMGServiceInterface.registListener(new MyServiceListener(activityContext));
-                    isDetectionOn = true;
-                    onWatchDetectionOn();
+                    mMyServiceListener = new MyServiceListener(activityContext);
+                    mMGServiceInterface.registListener(mMyServiceListener);
+                    isServiceReady = true;
+                    onServiceReady();
                 }
             } catch (RemoteException e) {
                 e.printStackTrace();
@@ -109,7 +131,9 @@ public abstract class WatchActivity extends AppCompatActivity {
         public void onServiceDisconnected(ComponentName name) {
             if (mMGServiceInterface != null) {
                 try {
-                    mMGServiceInterface.unregistListener(new MyServiceListener(activityContext));
+                    isServiceReady = false;
+                    onWatchGestureError(new WatchException(SERVICE_DISCONNECTED));
+                    mMGServiceInterface.unregistListener(mMyServiceListener);
                 } catch (RemoteException e) {
                     e.printStackTrace();
                 }
@@ -135,7 +159,7 @@ public abstract class WatchActivity extends AppCompatActivity {
                 }
             }
 
-            if (gestureId != -1 && Arrays.asList(getRequiredWatchGestures()).contains(wg)) {
+            if (isDetectionOn && gestureId != -1 && Arrays.asList(getRequiredWatchGestures()).contains(wg)) {
                 WatchGesture gesture = findNameByGestureId(gestureId);
                 if (gesture != null) {
                     ((WatchActivity)mContext).onWatchGestureReceived(gesture);

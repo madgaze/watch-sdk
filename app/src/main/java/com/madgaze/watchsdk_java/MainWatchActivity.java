@@ -41,11 +41,18 @@ public class MainWatchActivity extends WatchActivity {
     }
 
     @Override
-    protected void onStart() {
-        super.onStart();
-        if (!MGWatch.isWatchGestureDetecting(this)) {
-            MGWatch.startWatchGestureDetection(this);
-        }
+    public void onPause(){
+        super.onPause();
+
+        if (MGWatch.isWatchGestureDetecting(this))
+            MGWatch.stopWatchGestureDetection(this);
+    }
+
+    @Override
+    public void onResume(){
+        super.onResume();
+        if (MGWatch.isServiceReady(this))
+            tryStartDetection();
     }
 
     @Override
@@ -71,8 +78,25 @@ public class MainWatchActivity extends WatchActivity {
     }
 
     @Override
+    public void onServiceReady() {
+        setStatusText("Service Connected");
+        tryStartDetection();
+    }
+
+    @Override
     protected WatchGesture[] getRequiredWatchGestures() {
         return REQUIRED_WATCH_GESTURES;
+    }
+
+    private void tryStartDetection(){
+        if (!MGWatch.isGesturesTrained(this)) {
+            setStatusText("Training Required");
+            return;
+        }
+
+        if (!MGWatch.isWatchGestureDetecting(this)) {
+            MGWatch.startWatchGestureDetection(this);
+        }
     }
 
     private void setStatusText(String text){

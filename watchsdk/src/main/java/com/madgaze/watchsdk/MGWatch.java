@@ -1,10 +1,15 @@
 package com.madgaze.watchsdk;
 
+import android.app.Activity;
+
 import com.madgaze.watchsdk.MobileActivity;
 import com.madgaze.watchsdk.WatchActivity;
 
 public class MGWatch {
     public static boolean isMGWatchServiceReady(MobileActivity ctx){
+        return ctx.isServiceReady;
+    }
+    public static boolean isServiceReady(WatchActivity ctx){
         return ctx.isServiceReady;
     }
     public static boolean isWatchGestureDetecting(MobileActivity ctx){
@@ -23,6 +28,9 @@ public class MGWatch {
         return ctx.isWatchConnected();
     }
     public static boolean isGesturesTrained(MobileActivity ctx){
+        return ctx.isGesturesTrained();
+    }
+    public static boolean isGesturesTrained(WatchActivity ctx){
         return ctx.isGesturesTrained();
     }
     public static void trainRequiredGestures(MobileActivity ctx) {

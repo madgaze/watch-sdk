@@ -63,7 +63,6 @@ public class MainActivity extends MobileActivity {
 
     @Override
     public void onWatchDetectionOn() {
-
         Log.d(TAG, "onWatchDetectionOn: ");
         setStatusText("Listening");
     }
