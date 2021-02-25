@@ -18,10 +18,10 @@ import java.util.Arrays;
 public abstract class WatchActivity extends AppCompatActivity {
     String TAG = WatchActivity.class.getSimpleName();
     String remotePackageName = "com.madgaze.watch";
-    static String CONTROLLER_APP_NOT_UPDATED = "MAD Gaze Controller app not updated";
-    static String INCOMPLETE_CALIBRATION = "Incomplete Calibration";
-    static String CONTROLLER_ERROR = "MAD Gaze Controller app error";
-    static String SOME_GESTURES_NOT_TRAINED = "Some gestures have not trained";
+    static String CONTROLLER_APP_NOT_UPDATED = "CONTROLLER_APP_NOT_UPDATED";
+    static String INCOMPLETE_CALIBRATION = "INCOMPLETE_CALIBRATION";
+    static String CONTROLLER_ERROR = "CONTROLLER_ERROR";
+    static String UNABLE_TO_START_INCOMPLETED_TRAINING = "UNABLE_TO_START_INCOMPLETED_TRAINING";
     MGServiceInterface mMGServiceInterface;
     boolean isDetectionOn = false;
     Context activityContext = this;
@@ -94,7 +94,7 @@ public abstract class WatchActivity extends AppCompatActivity {
                     }
                     if (!isGesturesTrained()) {
                         Log.d(TAG, "!isGesturesTrained");
-                        onWatchGestureError(new WatchException(SOME_GESTURES_NOT_TRAINED));
+                        onWatchGestureError(new WatchException(UNABLE_TO_START_INCOMPLETED_TRAINING));
                     }
                     mMGServiceInterface.registListener(new MyServiceListener(activityContext));
                     isDetectionOn = true;

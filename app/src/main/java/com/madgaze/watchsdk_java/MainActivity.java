@@ -57,6 +57,7 @@ public class MainActivity extends MobileActivity {
     @Override
     public void onWatchGestureError(WatchException error) {
         Log.d(TAG, "onWatchGestureError: "+error.getMessage());
+        setStatusText(error.getMessage());
     }
 
     @Override

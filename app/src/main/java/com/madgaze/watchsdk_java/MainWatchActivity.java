@@ -11,6 +11,7 @@ import com.madgaze.watchsdk.WatchGesture;
 
 import androidx.appcompat.widget.Toolbar;
 
+import android.os.Looper;
 import android.util.Log;
 import android.view.View;
 
@@ -36,18 +37,7 @@ public class MainWatchActivity extends WatchActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_main);
-//        Toolbar toolbar = findViewById(R.id.toolbar);
-//        setSupportActionBar(toolbar);
-
-//        FloatingActionButton fab = findViewById(R.id.fab);
-//        fab.setOnClickListener(new View.OnClickListener() {
-//            @Override
-//            public void onClick(View view) {
-//                Snackbar.make(view, "Replace with your own action", Snackbar.LENGTH_LONG)
-//                        .setAction("Action", null).show();
-//            }
-//        });
+        setContentView(R.layout.activity_watch_main);
     }
 
     @Override
@@ -59,50 +49,53 @@ public class MainWatchActivity extends WatchActivity {
     }
 
     @Override
-    public boolean onCreateOptionsMenu(Menu menu) {
-        // Inflate the menu; this adds items to the action bar if it is present.
-        getMenuInflater().inflate(R.menu.menu_main, menu);
-        return true;
-    }
-
-    @Override
-    public boolean onOptionsItemSelected(MenuItem item) {
-        // Handle action bar item clicks here. The action bar will
-        // automatically handle clicks on the Home/Up button, so long
-        // as you specify a parent activity in AndroidManifest.xml.
-        int id = item.getItemId();
-
-        //noinspection SimplifiableIfStatement
-//        if (id == R.id.action_settings) {
-//            return true;
-//        }
-
-        return super.onOptionsItemSelected(item);
-    }
-
-    @Override
     public void onWatchGestureReceived(WatchGesture gesture) {
         Log.d(TAG, "onWatchGestureReceived: "+gesture.name());
+        setResultText(gesture);
     }
 
     @Override
     public void onWatchGestureError(WatchException error) {
         Log.d(TAG, "onWatchGestureError: "+error.getMessage());
+        setStatusText(error.getMessage());
     }
 
     @Override
     public void onWatchDetectionOn() {
-        Log.d(TAG, "onWatchDetectionOn: ");
+        setStatusText("Listening");
     }
 
     @Override
     public void onWatchDetectionOff() {
-        Log.d(TAG, "onWatchDetectionOff: ");
+        setStatusText("Idle");
     }
 
     @Override
     protected WatchGesture[] getRequiredWatchGestures() {
         return REQUIRED_WATCH_GESTURES;
+    }
+
+    private void setStatusText(String text){
+        setText(R.id.status, "Status: " + text);
+    }
+
+    private void setResultText(final WatchGesture gesture){
+        setText(R.id.result, gesture.toString());
+    }
+
+    public void setText(final int resId, final String text){
+        if (Looper.myLooper() == Looper.getMainLooper()) {
+            TextView textView = ((TextView) findViewById(resId));
+            if (textView != null)
+                textView.setText(text);
+        } else runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                TextView textView = ((TextView)findViewById(resId));
+                if (textView != null)
+                    textView.setText(text);
+            }
+        });
     }
 
 }

@@ -20,11 +20,11 @@ import java.util.Arrays;
 public abstract class MobileActivity extends AppCompatActivity {
     String TAG = MobileActivity.class.getSimpleName();
     String remotePackageName = "com.madgaze.watch.connector";
-    static String CONTROLLER_APP_NOT_UPDATED = "MG Watch app not updated";
-    static String NOT_CONNECTED_TO_WATCH = "Not connected to watch";
-    static String GESTURE_NOT_TRAINED = "Some gestures have not trained yet";
-    static String CONTROLLER_ERROR = "MG Watch app error";
-    static String MGWATCH_SERVICE_DISCONNECTED = "MG Watch service disconnected";
+    static String MGWATCH_NOT_UPDATED = "MGWATCH_NOT_UPDATED";
+    static String UNABLE_TO_START_NOT_CONNECTED = "UNABLE_TO_START_NOT_CONNECTED";
+    static String UNABLE_TO_START_INCOMPLETED_TRAINING = "UNABLE_TO_START_INCOMPLETED_TRAINING";
+    static String CONTROLLER_ERROR = "CONTROLLER_ERROR";
+    static String MGWATCH_SERVICE_DISCONNECTED = "MGWATCH_SERVICE_DISCONNECTED";
     MGConnectorServiceInterface mMGConnectorServiceInterface;
     private boolean isDetectionOn = false;
     public boolean isServiceReady = false;
@@ -125,11 +125,11 @@ public abstract class MobileActivity extends AppCompatActivity {
                     onWatchDetectionOn();
                 } else {
                     isDetectionOn = false;
-                    onWatchGestureError(new WatchException(GESTURE_NOT_TRAINED));
+                    onWatchGestureError(new WatchException(UNABLE_TO_START_INCOMPLETED_TRAINING));
                 }
             } else {
                 isDetectionOn = false;
-                onWatchGestureError(new WatchException(NOT_CONNECTED_TO_WATCH));
+                onWatchGestureError(new WatchException(UNABLE_TO_START_NOT_CONNECTED));
             }
         } catch (RemoteException e) {
             e.printStackTrace();
@@ -148,7 +148,7 @@ public abstract class MobileActivity extends AppCompatActivity {
         intent.setComponent(new ComponentName(remotePackageName, remotePackageName+".service.SDKService"));
         boolean result = bindService(intent, mConnection, Context.BIND_AUTO_CREATE);
         if (!result) {
-            onWatchGestureError(new WatchException(CONTROLLER_APP_NOT_UPDATED));
+            onWatchGestureError(new WatchException(MGWATCH_NOT_UPDATED));
         }
     }
 
